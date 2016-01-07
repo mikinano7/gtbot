@@ -38,7 +38,7 @@ type Result struct {
 	TrackTimeMillis int64 `json:"trackTimeMillis"`
 }
 
-func Search(query []string) (*Response, error) {
+func Search(query []string) ([]Result, error) {
 	term := strings.Join(query, "+")
 	req := newRequest(term, 50)
 	jpUrl := fmt.Sprintf("%s&country=%s&lang=%s", searchUrl, req.Country, req.Lang) //jp
@@ -55,14 +55,14 @@ func Search(query []string) (*Response, error) {
 	}
 }
 
-func parse(body io.Reader) (*Response, error) {
+func parse(body io.Reader) ([]Result, error) {
 	res, err := ioutil.ReadAll(body)
 
 	response := new(Response)
 	if err = json.Unmarshal(res, response); err != nil {
 		return nil, err
 	} else {
-		return response, nil
+		return response.Results, nil
 	}
 }
 

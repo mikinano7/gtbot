@@ -14,7 +14,7 @@ import (
 )
 
 func main() {
-	err := godotenv.Load("twitter_oauth.env")
+	err := godotenv.Load("go.env")
 	if err != nil {
 		log.Fatal("Error loading .env file")
 	}
@@ -22,7 +22,10 @@ func main() {
 	anaconda.SetConsumerKey(os.Getenv("TWITTER_CONSUMER_KEY"))
 	anaconda.SetConsumerSecret(os.Getenv("TWITTER_CONSUMER_SECRET"))
 
-	api := anaconda.NewTwitterApi(os.Getenv("TWITTER_OAUTH_TOKEN"), os.Getenv("TWITTER_OAUTH_TOKEN_SECRET"))
+	api := anaconda.NewTwitterApi(
+		os.Getenv("TWITTER_OAUTH_TOKEN"),
+		os.Getenv("TWITTER_OAUTH_TOKEN_SECRET"),
+	)
 	defer api.Close()
 
 	stream := api.UserStream(url.Values{})
@@ -79,6 +82,8 @@ func command(status anaconda.Tweet) string {
 		switch command {
 		case ":m":
 			return service.ITunes(query)
+		case ":y":
+			return service.YouTube(query)
 		default:
 			return onError(errors.New("コマンドが定義されていません。"))
 		}
@@ -96,5 +101,5 @@ func onError(err error) string {
 }
 
 func reply(user string, status string) string {
-	return fmt.Sprintf("%s %s", user, status)
+	return fmt.Sprintf("@%s %s", user, status)
 }
