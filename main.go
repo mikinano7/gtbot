@@ -84,6 +84,8 @@ func command(status anaconda.Tweet) string {
 			return service.ITunes(query)
 		case ":y":
 			return service.YouTube(query)
+		case ":x":
+			return service.Xvideos(query)
 		default:
 			return onError(errors.New("コマンドが定義されていません。"))
 		}

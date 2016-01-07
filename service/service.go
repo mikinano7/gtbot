@@ -3,7 +3,9 @@ package service
 import (
 	"./google"
 	"./itunes"
+	"./xvideos"
 	"fmt"
+	"math/rand"
 	"time"
 )
 
@@ -44,6 +46,22 @@ func YouTube(query []string) string {
 				time.Now().String(),
 			)
 		}
+	}
+}
+
+func Xvideos(query []string) string {
+	res := xvideos.Xvideos(query)
+
+	if len(res) > 0 {
+		rand.Seed(time.Now().UnixNano())
+		rand.Intn(len(res)-1)
+
+		return res[0]
+	} else {
+		return fmt.Sprintf(
+			"検索結果が0件でした。 [%s]",
+			time.Now().String(),
+		)
 	}
 }
 

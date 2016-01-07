@@ -15,5 +15,7 @@ ChimeraCoder/anaconda を使ったTwitter botのお試し
     * 指定されたqueryでiTunesの試聴リンクを取得します。
 * `:y $query`
     * 指定されたqueryでYouTubeの動画リンクを取得します。
+* `:x $query`
+    * 指定されたqueryでXXXXXXXの動画リンクを取得します。
 
 #Progress
