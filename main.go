@@ -2,7 +2,6 @@ package main
 
 import (
 	"./service"
-	"errors"
 	"fmt"
 	"github.com/ChimeraCoder/anaconda"
 	"github.com/joho/godotenv"
@@ -59,8 +58,23 @@ func pattern(status anaconda.Tweet) string {
 	if strings.HasPrefix(status.Text, ":") {
 		return command(status)
 	} else {
+		return ""
+	}
+}
+
+func command(status anaconda.Tweet) string {
+	arr := strings.Split(status.Text, " ")
+	if len(arr) > 1 {
+		command, query := arr[0], arr[1:len(arr)]
+		switch command {
+		case ":m": return service.ITunes(query)
+		case ":y": return service.YouTube(query)
+		case ":x": return service.Xvideos(query)
+		default: return ""
+		}
+	} else {
 		switch status.Text {
-		case "Go":
+		case ":go":
 			return fmt.Sprintf(
 				"ʕ ◔ϖ◔ʔ [%s]",
 				time.Now().String(),
@@ -72,25 +86,6 @@ func pattern(status anaconda.Tweet) string {
 			)
 		default: return ""
 		}
-	}
-}
-
-func command(status anaconda.Tweet) string {
-	arr := strings.Split(status.Text, " ")
-	if len(arr) > 1 {
-		command, query := arr[0], arr[1:len(arr)]
-		switch command {
-		case ":m":
-			return service.ITunes(query)
-		case ":y":
-			return service.YouTube(query)
-		case ":x":
-			return service.Xvideos(query)
-		default:
-			return onError(errors.New("コマンドが定義されていません。"))
-		}
-	} else {
-		return onError(errors.New("引数が指定されていません。"))
 	}
 }
 
