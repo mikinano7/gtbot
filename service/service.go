@@ -3,8 +3,8 @@ package service
 import (
 	"./google"
 	"./itunes"
-	"./xvideos"
 	"fmt"
+	"github.com/mikinano7/xvideos4go"
 	"math/rand"
 	"time"
 )
@@ -50,13 +50,18 @@ func YouTube(query []string) string {
 }
 
 func Xvideos(query []string) string {
-	res := xvideos.Xvideos(query)
+	res := xvideos4go.Search(query)
 
 	if len(res) > 0 {
 		rand.Seed(time.Now().UnixNano())
 		rand.Intn(len(res)-1)
 
-		return res[0]
+		return fmt.Sprintf(
+			"%s%s - %s",
+			res[0].Title,
+			res[0].Duration,
+			res[0].Url,
+		)
 	} else {
 		return fmt.Sprintf(
 			"検索結果が0件でした。 [%s]",
