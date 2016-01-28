@@ -5,9 +5,59 @@ import (
 	"./itunes"
 	"fmt"
 	"github.com/mikinano7/xvideos4go"
+	"github.com/mikinano7/dropbox4go"
 	"math/rand"
 	"time"
+	"net/http"
+	"os"
+	"path"
+	"strings"
+	"errors"
 )
+
+func DropboxUpload(url string) string {
+	pos := strings.LastIndex(url, "/")
+	fileName := url[pos + 1:]
+	ext := path.Ext(fileName)
+
+	switch ext {
+	case ".jpg", ".jpeg", ".png", ".gif":
+		if (!strings.Contains(url, "http")) {
+			return onError(errors.New("incorrect resource."))
+		}
+	default:
+		return onError(errors.New("incorrect extension."))
+	}
+
+	token := os.Getenv("DB_ACCESS_TOKEN")
+
+	httpClient := http.DefaultClient
+	resp, err := httpClient.Get(url)
+	defer resp.Body.Close()
+	if err != nil {
+		return onError(err)
+	}
+
+	svc := dropbox4go.New(httpClient, token)
+	req := dropbox4go.Request{
+		File: resp.Body,
+		Parameters: dropbox4go.Parameters{
+			Path: "/home/" + fileName,
+			Mode: "overwrite",
+			AutoRename: false,
+			ClientModified: time.Now().UTC().Format(time.RFC3339),
+			Mute: true,
+		},
+	}
+
+	result, err := svc.Upload(req)
+
+	if err != nil {
+		return onError(err)
+	} else {
+		return fmt.Sprintf("file %s has uploaded. (size: %d bytes)", fileName, result.Size)
+	}
+}
 
 func ITunes(query []string) string {
 	if res, err := itunes.Search(query); err != nil {
@@ -54,7 +104,7 @@ func Xvideos(query []string) string {
 
 	if len(res) > 0 {
 		rand.Seed(time.Now().UnixNano())
-		rand.Intn(len(res)-1)
+		rand.Intn(len(res) - 1)
 
 		return fmt.Sprintf(
 			"%s%s - %s",
@@ -74,6 +124,6 @@ func onError(err error) string {
 	return fmt.Sprintf(
 		"%s [%s]",
 		err.Error(),
-		time.Now().String(),
+		time.Now().In(time.FixedZone("Asia/Tokyo", 9 * 60 * 60)).Format(time.RFC3339),
 	)
 }

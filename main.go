@@ -2,6 +2,7 @@ package main
 
 import (
 	"./service"
+	"errors"
 	"fmt"
 	"github.com/ChimeraCoder/anaconda"
 	"github.com/joho/godotenv"
@@ -28,10 +29,11 @@ func main() {
 
 	anaconda.SetConsumerKey(os.Getenv("TWITTER_CONSUMER_KEY"))
 	anaconda.SetConsumerSecret(os.Getenv("TWITTER_CONSUMER_SECRET"))
+	botName := os.Getenv("TWITTER_BOT_NAME")
 
 	api := anaconda.NewTwitterApi(
-		os.Getenv("TWITTER_OAUTH_TOKEN"),
-		os.Getenv("TWITTER_OAUTH_TOKEN_SECRET"),
+		os.Getenv("TWITTER_ACCESS_TOKEN"),
+		os.Getenv("TWITTER_ACCESS_TOKEN_SECRET"),
 	)
 	defer api.Close()
 
@@ -50,7 +52,7 @@ func main() {
 			switch status := item.(type) {
 			case anaconda.Tweet:
 				fmt.Printf("%s: %s\n", status.User.ScreenName, status.Text)
-				if text := pattern(status); text != "" {
+				if text := pattern(status); text != "" && strings.Contains(text, botName) {
 					v := url.Values{"in_reply_to_status_id": []string{status.IdStr}}
 					if _, err := api.PostTweet(reply(status.User.ScreenName, text), v); err != nil {
 						api.PostTweet(reply(status.User.ScreenName, onError(err)), v)
@@ -73,7 +75,7 @@ func pattern(status anaconda.Tweet) string {
 func command(status anaconda.Tweet) string {
 	arr := strings.Split(status.Text, " ")
 	if len(arr) > 1 {
-		command, query := arr[0], arr[1:len(arr)]
+		command, query := arr[1], arr[2:len(arr)]
 		switch command {
 		case ":m":
 			return service.ITunes(query)
@@ -81,6 +83,16 @@ func command(status anaconda.Tweet) string {
 			return service.YouTube(query)
 		case ":x":
 			return service.Xvideos(query)
+		case ":up":
+			if status.User.ScreenName == os.Getenv("TWITTER_OWNER_NAME") {
+				if len(status.Entities.Media) > 0 {
+					return service.DropboxUpload(status.Entities.Media[0].Media_url)
+				} else {
+					return service.DropboxUpload(query[0])
+				}
+			} else {
+				return onError(errors.New("ダメだよ。"))
+			}
 		default:
 			return ""
 		}
@@ -89,12 +101,12 @@ func command(status anaconda.Tweet) string {
 		case ":go":
 			return fmt.Sprintf(
 				"ʕ ◔ϖ◔ʔ [%s]",
-				&MyTime{time.Now()}.fmt(),
+				MyTime{time.Now()}.fmt(),
 			)
 		case ":test":
 			return fmt.Sprintf(
 				"process is running. [%s]",
-				&MyTime{time.Now()}.fmt(),
+				MyTime{time.Now()}.fmt(),
 			)
 		default:
 			return ""
@@ -106,7 +118,7 @@ func onError(err error) string {
 	return fmt.Sprintf(
 		"%s [%s]",
 		err.Error(),
-		&MyTime{time.Now()}.fmt(),
+		MyTime{time.Now()}.fmt(),
 	)
 }
 
