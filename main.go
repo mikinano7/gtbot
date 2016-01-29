@@ -52,7 +52,7 @@ func main() {
 			switch status := item.(type) {
 			case anaconda.Tweet:
 				fmt.Printf("%s: %s\n", status.User.ScreenName, status.Text)
-				if text := pattern(status); text != "" && strings.Contains(text, botName) {
+				if text := pattern(status, botName); text != "" {
 					v := url.Values{"in_reply_to_status_id": []string{status.IdStr}}
 					if _, err := api.PostTweet(reply(status.User.ScreenName, text), v); err != nil {
 						api.PostTweet(reply(status.User.ScreenName, onError(err)), v)
@@ -64,8 +64,8 @@ func main() {
 	}
 }
 
-func pattern(status anaconda.Tweet) string {
-	if strings.HasPrefix(status.Text, ":") {
+func pattern(status anaconda.Tweet, botName string) string {
+	if strings.HasPrefix(status.Text, fmt.Sprintf("@%s :", botName)) {
 		return command(status)
 	} else {
 		return ""
@@ -88,7 +88,7 @@ func command(status anaconda.Tweet) string {
 				if len(status.Entities.Media) > 0 {
 					return service.DropboxUpload(status.Entities.Media[0].Media_url)
 				} else {
-					return service.DropboxUpload(query[0])
+					return service.DropboxUpload(status.Entities.Urls[0].Expanded_url)
 				}
 			} else {
 				return onError(errors.New("ダメだよ。"))

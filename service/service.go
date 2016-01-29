@@ -42,7 +42,7 @@ func DropboxUpload(url string) string {
 	req := dropbox4go.Request{
 		File: resp.Body,
 		Parameters: dropbox4go.Parameters{
-			Path: "/home/" + fileName,
+			Path: "/twitter/" + fileName,
 			Mode: "overwrite",
 			AutoRename: false,
 			ClientModified: time.Now().UTC().Format(time.RFC3339),
