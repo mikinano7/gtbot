@@ -4,12 +4,12 @@ import (
 	"google.golang.org/api/youtube/v3"
 	"google.golang.org/api/googleapi/transport"
 	"net/http"
-	"os"
 	"strings"
+	"github.com/spf13/viper"
 )
 
 func YouTube(query []string) ([]*youtube.SearchResult, error) {
-	developerKey := os.Getenv("GOOGLE_DEVELOPER_KEY")
+	developerKey := viper.GetString("google.developer_key")
 
 	client := &http.Client{
 		Transport: &transport.APIKey{Key: developerKey},

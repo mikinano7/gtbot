@@ -6,10 +6,10 @@ import (
 	"fmt"
 	"github.com/mikinano7/xvideos4go"
 	"github.com/mikinano7/dropbox4go"
+	"github.com/spf13/viper"
 	"math/rand"
 	"time"
 	"net/http"
-	"os"
 	"path"
 	"strings"
 	"errors"
@@ -29,7 +29,7 @@ func DropboxUpload(url string) string {
 		return onError(errors.New("incorrect extension."))
 	}
 
-	token := os.Getenv("DB_ACCESS_TOKEN")
+	token := viper.GetString("dropbox.access_token")
 
 	httpClient := http.DefaultClient
 	resp, err := httpClient.Get(url)

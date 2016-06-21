@@ -5,10 +5,9 @@ import (
 	"errors"
 	"fmt"
 	"github.com/ChimeraCoder/anaconda"
-	"github.com/joho/godotenv"
+	"github.com/spf13/viper"
 	"log"
 	"net/url"
-	"os"
 	"strings"
 	"time"
 )
@@ -22,18 +21,15 @@ func (t MyTime) fmt() string {
 }
 
 func main() {
-	err := godotenv.Load("go.env")
-	if err != nil {
-		log.Fatal("Error loading .env file")
-	}
+	initConfig()
 
-	anaconda.SetConsumerKey(os.Getenv("TWITTER_CONSUMER_KEY"))
-	anaconda.SetConsumerSecret(os.Getenv("TWITTER_CONSUMER_SECRET"))
-	botName := os.Getenv("TWITTER_BOT_NAME")
+	anaconda.SetConsumerKey(viper.GetString("twitter.consumer_key"))
+	anaconda.SetConsumerSecret(viper.GetString("twitter.consumer_secret"))
+	botName := viper.GetString("twitter.bot_name")
 
 	api := anaconda.NewTwitterApi(
-		os.Getenv("TWITTER_ACCESS_TOKEN"),
-		os.Getenv("TWITTER_ACCESS_TOKEN_SECRET"),
+		viper.GetString("twitter.access_token"),
+		viper.GetString("twitter.access_token_secret"),
 	)
 	defer api.Close()
 
@@ -64,6 +60,14 @@ func main() {
 	}
 }
 
+func initConfig() {
+	viper.SetConfigName("config")
+	viper.SetConfigType("json")
+	if err := viper.ReadInConfig(); err != nil {
+		log.Fatalln(err.Error())
+	}
+}
+
 func pattern(status anaconda.Tweet, botName string) string {
 	if strings.HasPrefix(status.Text, fmt.Sprintf("@%s :", botName)) {
 		return command(status)
@@ -84,7 +88,7 @@ func command(status anaconda.Tweet) string {
 		case ":x":
 			return service.Xvideos(query)
 		case ":up":
-			if status.User.ScreenName == os.Getenv("TWITTER_OWNER_NAME") {
+			if status.User.ScreenName == viper.GetString("twitter.owner_name") {
 				if len(status.Entities.Media) > 0 {
 					return service.DropboxUpload(status.Entities.Media[0].Media_url)
 				} else {
