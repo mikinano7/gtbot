@@ -13,6 +13,7 @@ import (
 	"path"
 	"strings"
 	"errors"
+"github.com/mikinano7/soundcloud"
 )
 
 func DropboxUpload(url string) string {
@@ -111,6 +112,29 @@ func Xvideos(query []string) string {
 			res[0].Title,
 			res[0].Duration,
 			res[0].Url,
+		)
+	} else {
+		return fmt.Sprintf(
+			"検索結果が0件でした。 [%s]",
+			time.Now().String(),
+		)
+	}
+}
+
+func Soundcloud(query []string) string {
+	clientId := viper.GetString("soundcloud.client_id")
+	clientSecret := viper.GetString("soundcloud.client_secret")
+	api, _ := soundcloud.NewClient(clientId, clientSecret)
+	res := api.GetTracks(strings.Join(query, "+"))
+
+	if len(res) > 0 {
+		rand.Seed(time.Now().UnixNano())
+		rand.Intn(len(res) - 1)
+
+		return fmt.Sprintf(
+			"%s - %s",
+			res[0].Title,
+			res[0].PermalinkUrl,
 		)
 	} else {
 		return fmt.Sprintf(

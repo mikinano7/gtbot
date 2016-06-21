@@ -61,8 +61,7 @@ func main() {
 }
 
 func initConfig() {
-	viper.SetConfigName("config")
-	viper.SetConfigType("json")
+	viper.SetConfigFile("config.json")
 	if err := viper.ReadInConfig(); err != nil {
 		log.Fatalln(err.Error())
 	}
@@ -87,6 +86,8 @@ func command(status anaconda.Tweet) string {
 			return service.YouTube(query)
 		case ":x":
 			return service.Xvideos(query)
+		case ":sc":
+			return service.Soundcloud(query)
 		case ":up":
 			if status.User.ScreenName == viper.GetString("twitter.owner_name") {
 				if len(status.Entities.Media) > 0 {
